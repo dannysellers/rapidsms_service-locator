@@ -1,0 +1,16 @@
+SMS to number:
+—"[Service] near [location]"
+—Return result
+—Adjective/qualifier on service
+—Changes made after 5 people suggest correction
+—Class of users
+—low cost per query
+—0 charge for correction suggestion
+—include / for ad hoc resources e.g. post-crisis
+—determine where people are by using secondary queries / choosing to see other options?
+—determine categorical need in specific areas by query category
+
+Backend / frontend (web interface):
+Define camp / area with mapbox / leaflet.js
+Util to convert between global and relative coordinates
+Define location of nodes / beacons

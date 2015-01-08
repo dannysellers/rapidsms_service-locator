@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Define a map area
+{% endblock title %}
+
+{% block extra_javascript %}
+	<script src='https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js'></script>
+	<link href='https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.css' rel='stylesheet' />
+{% endblock extra_javascript %}
+
+{% block content %}
+
+	<style>
+		#map {
+			position: absolute;
+			top: 50px;
+			bottom: 0;
+			width: 50%;
+			height: 50%;
+		}
+	</style>
+
+	<div id='map'></div>
+	<script>
+	L.mapbox.accessToken = 'pk.eyJ1IjoiZHNlbGxlcnM5MCIsImEiOiJTRlpwU0ZRIn0.hvkyvF57CUqV0xVIQ6bYhQ';
+	var map = L.mapbox.map('map', 'examples.map-i86nkdio')
+		.setView([40, -74.50], 9);
+	</script>
+
+{% endblock content %}
