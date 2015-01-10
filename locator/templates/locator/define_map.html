@@ -49,6 +49,7 @@
 
 	map.on('draw:created', showPolygonArea);
 	map.on('draw:edited', showPolygonAreaEdited);
+{#    map.on('blur', saveCoords); // 'blur' fires when map loses focus#}
 
 	function showPolygonAreaEdited(e) {
 	  e.layers.eachLayer(function(layer) {
@@ -61,6 +62,10 @@
 	  e.layer.bindPopup((LGeo.area(e.layer) / 1000000).toFixed(2) + ' km<sup>2</sup>');
 	  e.layer.openPopup();
 	}
+{#    function saveCoords() {#}
+{#        // incoming #}
+{#    }#}
+
 	</script>
 
 {% endblock content %}
