@@ -14,3 +14,8 @@ Backend / frontend (web interface):
 Define camp / area with mapbox / leaflet.js
 Util to convert between global and relative coordinates
 Define location of nodes / beacons
+
+GeoDjango
+
+should MapArea be divided up into a grid?
+do relative coordinates make sense? relative distance wouldn't rely on it

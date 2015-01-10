@@ -1,36 +1,98 @@
 from django.db import models
+from django.utils.html import escape
+from django.utils.text import slugify
 # from django.utils.translation import ugettext as _  #, ugettext_lazy as __
 
 
-ENTITY_TYPES = (
-	('0', 'doctor'),
-	('1', 'market'),
-)
+class Point(models.Model):
+	""" Lifted from rapidsms.contrib.locations.models.
+	To be replaced with GeoDjango """
+
+	latitude = models.DecimalField(max_digits = 13, decimal_places = 10)
+	longitude = models.DecimalField(max_digits = 13, decimal_places = 10)
+
+	def __unicode__ (self):
+		return "{0}, {1}".format(self.latitude, self.longitude)
+
+	def __repr__ (self):
+		return '<{0}: {1}>'.format(type(self).__name__, self)
 
 
-# class EntityManager(models.Manager):
-# 	def create_entity (self, lat, long, name, type):
-# 		convert relative coordinates to absolute
-# 		relative_lat = convert(lat)
-# 		relative_long = convert(long)
-# 		_entity = self.create(abs_latitude = lat, abs_longitude = long,
-# 							  latitude = relative_lat, longitude = relative_long,
-# 							  name = name, type = type)
+class LocationType(models.Model):
+	""" Lifted from rapidsms.contrib.locations.models.
+	To be replaced with GeoDjango """
+	name = models.CharField(max_length = 100)
+	slug = models.SlugField(unique = True, primary_key = True)
+
+	def __unicode__ (self):
+		return self.name
+
+
+class MapAreaManager(models.Manager):
+	def create_map (self, name, x, y, height, width):
+		slug = slugify(name)
+		_location = Point.create(longitude = x, latitude = y)
+		_map = self.create(name = name, slug = slug, location = _location,
+						   height = height, width = width)
+		print("Created Map ({0}, {1})".format(_map.location.longitude, _map.location.latitude))
+
+
+class MapArea(models.Model):
+	""" This class defines the map area for generating relative coordinates (i.e.
+	the map box within which all beacons / points must be located) """
+	name = models.CharField(max_length = 100)
+	slug = models.SlugField(unique = True, primary_key = True)
+	location = models.ForeignKey(Point)
+	height = models.DecimalField(max_digits = 13, decimal_places = 10)
+	width = models.DecimalField(max_digits = 13, decimal_places = 10)
+
+	objects = MapAreaManager()
+
+	def __unicode__(self):
+		return u"Map: ({0}, {1})--{2} x {3}".format(self.location.longitude, self.location.latitude,
+													self.width, self.height)
+
+
+class EntityManager(models.Manager):
+	def create_entity (self, x, y, name, loc_type):
+		# TODO: Settle issue of relative/absolute coordinates
+		_location = Point.create(longitude = x, latitude = y)
+		_slug = slugify(name)
+		_entity = self.create(location = _location, name = name,
+							  slug = _slug, type = loc_type)
+		print("Created Entity {0}: ({1}, {2})".format(_entity.name, _entity.type))
 
 
 class Entity(models.Model):
 	""" This class (eventually a base class) is the prototype for all
-	 entities (i.e. market, doctor) tracked by the system. """
+	entities (i.e. market, doctor) tracked by the system. """
 	# TODO: Convert coordinates to built-in location
-	latitude = models.DecimalField(max_digits = 13, decimal_places = 10)
-	longitude = models.DecimalField(max_digits = 13, decimal_places = 10)
-	abs_latitude = models.DecimalField(max_digits = 13, decimal_places = 10)
-	abs_longitude = models.DecimalField(max_digits = 13, decimal_places = 10)
-	name = models.CharField(primary_key = True, max_length = 100)
-	type = models.CharField(choices = ENTITY_TYPES, max_length = 100)
+	location = models.ForeignKey(Point)
+	name = models.CharField(max_length = 100)
+	slug = models.SlugField(primary_key = True, unique = True)
+	type = models.ForeignKey(LocationType, related_name = "locations")
 
-	# objects = EntityManager()
+	objects = EntityManager()
 
-	def __unicode__(self):
-		# return _(u"{0}: {1}, {2}".format(self.type, self.latitude, self.longitude))
-		return u"{0}: {1}, {2}".format(self.type, self.latitude, self.longitude)
+	class Meta:
+		verbose_name_plural = "entities"
+
+	def __unicode__ (self):
+		return u"{0}: {1}, {2}".format(self.name, self.location.latitude, self.location.longitude)
+
+	@property
+	def uid (self):
+		return "{}:{}".format(self.type, self.pk)
+
+	def as_html (self):
+		"""
+		Return HTML fragment for embedding in a map.
+		"""
+		return escape(self.slug)
+
+	@property
+	def label (self):
+		"""
+		Return the caption for this Entity, to be embedded in the map.
+		"""
+		return unicode(self)
