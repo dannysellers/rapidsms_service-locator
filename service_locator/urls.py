@@ -2,6 +2,7 @@ from django.conf import settings
 from django.conf.urls import patterns, include, url
 from django.conf.urls.static import static
 from django.contrib import admin
+# from django.contrib.gis import admin
 from locator import views
 
 
@@ -14,15 +15,17 @@ urlpatterns = patterns('',
     url(r'^$', 'rapidsms.views.dashboard', name='rapidsms-dashboard'),
     # RapidSMS contrib app URLs
     (r'^httptester/', include('rapidsms.contrib.httptester.urls')),
-    #(r'^locations/', include('rapidsms.contrib.locations.urls')),
+    # (r'^locations/', include('rapidsms.contrib.locations.urls')),
     (r'^messagelog/', include('rapidsms.contrib.messagelog.urls')),
     (r'^messaging/', include('rapidsms.contrib.messaging.urls')),
     (r'^registration/', include('rapidsms.contrib.registration.urls')),
 
 	# Custom URLs
-	url(r'^test/$', views.blank_view, name = 'test_view'),
-	url(r'^define_map/$', views.define_map, name = 'define_map'),
-	url(r'^entities/$', views.entity_overview, name = 'entity_overview'),
+	# TODO: Split URLs into app-specific file
+	url(r'^test/', views.blank_view, name = 'test_view'),
+	url(r'^define_map/', views.define_map, name = 'define_map'),
+	url(r'^entities/', views.entity_overview, name = 'entity_overview'),
+	url(r'^add_entity/', views.add_entity, name='add_entity'),
 
     # Third party URLs
     (r'^selectable/', include('selectable.urls')),

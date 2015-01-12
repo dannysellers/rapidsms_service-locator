@@ -1,4 +1,5 @@
 from django.db import models
+# from django.contrib.gis.db import models
 from django.utils.html import escape
 from django.utils.text import slugify
 # from django.utils.translation import ugettext as _  #, ugettext_lazy as __
@@ -32,9 +33,8 @@ class MapAreaManager(models.Manager):
 	def create_map (self, name, x, y, height, width):
 		slug = slugify(name)
 		_location = Point.create(longitude = x, latitude = y)
-		_map = self.create(name = name, slug = slug, location = _location,
+		self.create(name = name, slug = slug, location = _location,
 						   height = height, width = width)
-		print("Created Map ({0}, {1})".format(_map.location.longitude, _map.location.latitude))
 
 
 class MapArea(models.Model):
@@ -43,6 +43,7 @@ class MapArea(models.Model):
 	name = models.CharField(max_length = 100)
 	slug = models.SlugField(unique = True, primary_key = True)
 	location = models.ForeignKey(Point)
+	# location = models.PointField(srid=4326)  # geodjango
 	height = models.DecimalField(max_digits = 13, decimal_places = 10)
 	width = models.DecimalField(max_digits = 13, decimal_places = 10)
 
@@ -56,11 +57,14 @@ class MapArea(models.Model):
 class EntityManager(models.Manager):
 	def create_entity (self, x, y, name, loc_type):
 		# TODO: Settle issue of relative/absolute coordinates
-		_location = Point.create(longitude = x, latitude = y)
+		_location = Point.objects.get_or_create(longitude = x, latitude = y)[0]
 		_slug = slugify(name)
-		_entity = self.create(location = _location, name = name,
-							  slug = _slug, type = loc_type)
-		print("Created Entity {0}: ({1}, {2})".format(_entity.name, _entity.type))
+		_type = LocationType.objects.get(name = loc_type)
+		if not _type:
+			# TODO: Necessary? Only the name is passed from the form/view
+			_type = LocationType.objects.get_or_create(slug = loc_type)[0]
+		self.create(location = _location, name = name,
+							  slug = _slug, type = _type)
 
 
 class Entity(models.Model):
@@ -68,6 +72,7 @@ class Entity(models.Model):
 	entities (i.e. market, doctor) tracked by the system. """
 	# TODO: Convert coordinates to built-in location
 	location = models.ForeignKey(Point)
+	# location = models.PointField(srid=4326)  # geodjango
 	name = models.CharField(max_length = 100)
 	slug = models.SlugField(primary_key = True, unique = True)
 	type = models.ForeignKey(LocationType, related_name = "locations")

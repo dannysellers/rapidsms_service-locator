@@ -32,6 +32,17 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+# 	'default': {
+# 		'ENGINE': 'django.db.backends.postgresql_psycopg2',
+# 		'NAME': 'service_locator_pgsql.db',
+# 		'USER': '',
+# 		'PASSWORD': '',
+# 		'HOST': '',
+# 		'PORT': '',
+# 	}
+# }
+
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
@@ -189,6 +200,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
+	# 'django.contrib.gis',
     # External apps
     "django_nose",
     #"djtables",  # required by rapidsms.contrib.locations

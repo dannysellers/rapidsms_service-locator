@@ -17,54 +17,95 @@
 
 {% block content %}
 
-	<style>
-		#map {
-			position: absolute;
-			top: 50px;
-			bottom: 0;
-			width: 75%;
-			height: 75%;
-		}
-	</style>
+    {% if messages %}
+        <ul class="message">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message|safe }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 
-	<div id='map'></div>
-	<script>
-	L.mapbox.accessToken = '{{ api_key }}';
-	var map = L.mapbox.map('map', '{{ map_key }}');
+    {{ form.errors }}
+    <form action="/add_entity/" method="post">{% csrf_token %}
+        <div class="fieldWrapper">
+            <p>1) Place the marker where the Entity is</p>
+            <div id="map" style="height:35em; width:80%; padding-top:100px;"></div>
+            <input id="coordinates" name="coordinates" value="" type="hidden" />
+        </div>
+        <div class="fieldWrapper">
+            <label>2) Name of the Entity</label>
+            {{ form.name }}
+        </div>
+        <div class="fieldWrapper">
+            <label>3) Type of the Entity</label>
+            <select name="type">
+                {% for choice in entity_types %}
+                    <option value="{{ choice }}">{{ choice }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <br>
+        <input type="submit" name="submit" class="btn" value="Add entity">
+    </form>
 
-	var featureGroup = L.featureGroup().addTo(map);
+    <script>
+        L.mapbox.accessToken = '{{ api_key }}';
+        var map = L.mapbox.map('map', '{{ map_key }}');
 
-	var drawControl = new L.Control.Draw({
-	  edit: {
-		featureGroup: featureGroup
-	  },
-	  draw: {
-		polygon: false,
-		polyline: false,
-		rectangle: true,
-		circle: false,
-		marker: false
-	  }
-	}).addTo(map);
+        var featureGroup = L.featureGroup().addTo(map);
 
-	map.on('draw:created', showPolygonArea);
-	map.on('draw:edited', showPolygonAreaEdited);
-{#    map.on('blur', saveCoords); // 'blur' fires when map loses focus#}
+        var drawControl = new L.Control.Draw({
+          edit: {
+            featureGroup: featureGroup
+          },
+          draw: {
+            polygon: false,
+            polyline: false,
+            rectangle: true,
+            circle: false,
+            marker: false
+          }
+        }).addTo(map);
 
-	function showPolygonAreaEdited(e) {
-	  e.layers.eachLayer(function(layer) {
-		showPolygonArea({ layer: layer });
-	  });
-	}
-	function showPolygonArea(e) {
-	  featureGroup.clearLayers();
-	  featureGroup.addLayer(e.layer);
-	  e.layer.bindPopup((LGeo.area(e.layer) / 1000000).toFixed(2) + ' km<sup>2</sup>');
-	  e.layer.openPopup();
-	}
-{#    function saveCoords() {#}
-{#        // incoming #}
-{#    }#}
+        map.on('draw:created', showPolygonArea);
+        map.on('draw:edited', showPolygonAreaEdited);
+    {#    map.on('blur', saveCoords); // 'blur' fires when map loses focus#}
+
+        function showPolygonAreaEdited(e) {
+          e.layers.eachLayer(function(layer) {
+            showPolygonArea({ layer: layer });
+          });
+        }
+        function showPolygonArea(e) {
+          featureGroup.clearLayers();
+          featureGroup.addLayer(e.layer);
+          e.layer.bindPopup((LGeo.area(e.layer) / 1000000).toFixed(2) + ' km<sup>2</sup>');
+          e.layer.openPopup();
+        }
+
+        function onMapClick(e) {
+              var lat = e.latlng.lat;
+              var lng = e.latlng.lng;
+
+              // Every time when user click on map we want to delete previous marker
+              // and create new marker on the new position where the user clicked
+              if (typeof marker != 'undefined') {
+                  map.removeLayer(marker);  // delete previous marker
+                  marker = L.marker([lat, lng]).addTo(map);  // add new marker
+              }
+              else {
+                  marker = L.marker([lat, lng]).addTo(map);  // add new marker
+              }
+
+              // we want to pass value of longitued and latitude to input field with id 'coordinates'
+              // note that we set that field as hidden because we don't want user to type the
+              // coordinates there. We want them to set marker on map
+              var point_coords = lat.toString().concat(",", lng.toString());
+              document.getElementById('coordinates').value = point_coords;
+            }
+
+        // call the onMapClick function when user click on map
+        map.on('click', onMapClick);
 
 	</script>
 
