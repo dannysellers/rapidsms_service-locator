@@ -210,12 +210,12 @@ INSTALLED_APPS = (
     # RapidSMS
     "rapidsms",
     "rapidsms.backends.database",
-    "rapidsms.contrib.handlers",
     "rapidsms.contrib.httptester",
     "rapidsms.contrib.messagelog",
     "rapidsms.contrib.messaging",
     "rapidsms.contrib.registration",
-    "rapidsms.contrib.echo",
+    # "rapidsms.contrib.echo",
+    "rapidsms.contrib.handlers",
 	"locator",
     "rapidsms.contrib.default",  # Must be last
 )
@@ -229,6 +229,8 @@ INSTALLED_BACKENDS = {
 LOGIN_REDIRECT_URL = '/'
 
 RAPIDSMS_HANDLERS = (
-    'rapidsms.contrib.echo.handlers.echo.EchoHandler',
-    'rapidsms.contrib.echo.handlers.ping.PingHandler',
+	'locator.handlers.handlers.QueryHandler',
+	'locator.handlers.handlers.HelpHandler',
+    # 'rapidsms.contrib.echo.handlers.echo.EchoHandler',
+    # 'rapidsms.contrib.echo.handlers.ping.PingHandler',
 )

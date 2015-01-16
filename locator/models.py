@@ -2,18 +2,22 @@ from django.db import models
 # from django.contrib.gis.db import models
 from django.utils.html import escape
 from django.utils.text import slugify
-# from django.utils.translation import ugettext as _  #, ugettext_lazy as __
+from django.utils.translation import ugettext as _, ugettext_lazy as __
 
 
 class Point(models.Model):
 	""" Lifted from rapidsms.contrib.locations.models.
 	To be replaced with GeoDjango """
 
+	class Meta:
+		verbose_name = __("Point")
+		verbose_name_plural = __("Points")
+
 	latitude = models.DecimalField(max_digits = 13, decimal_places = 10)
 	longitude = models.DecimalField(max_digits = 13, decimal_places = 10)
 
 	def __unicode__ (self):
-		return "{0}, {1}".format(self.latitude, self.longitude)
+		return _(u"{0}, {1}".format(self.latitude, self.longitude))
 
 	def __repr__ (self):
 		return '<{0}: {1}>'.format(type(self).__name__, self)
@@ -22,11 +26,15 @@ class Point(models.Model):
 class LocationType(models.Model):
 	""" Lifted from rapidsms.contrib.locations.models.
 	To be replaced with GeoDjango """
+	class Meta:
+		verbose_name = __("Location Type")
+		verbose_name_plural = __("Location Types")
+
 	name = models.CharField(max_length = 100)
 	slug = models.SlugField(unique = True, primary_key = True)
 
 	def __unicode__ (self):
-		return self.name
+		return _(u"{}".format(self.name))
 
 
 class MapAreaManager(models.Manager):
@@ -34,7 +42,7 @@ class MapAreaManager(models.Manager):
 		slug = slugify(name)
 		_location = Point.create(longitude = x, latitude = y)
 		self.create(name = name, slug = slug, location = _location,
-						   height = height, width = width)
+					height = height, width = width)
 
 
 class MapArea(models.Model):
@@ -49,9 +57,9 @@ class MapArea(models.Model):
 
 	objects = MapAreaManager()
 
-	def __unicode__(self):
-		return u"Map: ({0}, {1})--{2} x {3}".format(self.location.longitude, self.location.latitude,
-													self.width, self.height)
+	def __unicode__ (self):
+		return _(u"Map: ({0}, {1})--{2} x {3}".format(self.location.longitude, self.location.latitude,
+													self.width, self.height))
 
 
 class EntityManager(models.Manager):
@@ -63,14 +71,18 @@ class EntityManager(models.Manager):
 		if not _type:
 			# TODO: Necessary? Only the name is passed from the form/view
 			_type = LocationType.objects.get_or_create(slug = loc_type)[0]
+
 		self.create(location = _location, name = name,
-							  slug = _slug, type = _type)
+					slug = _slug, type = _type)
 
 
 class Entity(models.Model):
 	""" This class (eventually a base class) is the prototype for all
 	entities (i.e. market, doctor) tracked by the system. """
-	# TODO: Convert coordinates to built-in location
+	class Meta:
+		verbose_name = __("Entity")
+		verbose_name_plural = __("Entities")
+
 	location = models.ForeignKey(Point)
 	# location = models.PointField(srid=4326)  # geodjango
 	name = models.CharField(max_length = 100)
@@ -79,11 +91,8 @@ class Entity(models.Model):
 
 	objects = EntityManager()
 
-	class Meta:
-		verbose_name_plural = "entities"
-
 	def __unicode__ (self):
-		return u"{0}: {1}, {2}".format(self.name, self.location.latitude, self.location.longitude)
+		return _(u"{0}: {1}, {2}".format(self.name, self.location.latitude, self.location.longitude))
 
 	@property
 	def uid (self):

@@ -21,9 +21,8 @@ urlpatterns = patterns('',
     (r'^registration/', include('rapidsms.contrib.registration.urls')),
 
 	# Custom URLs
-	# TODO: Split URLs into app-specific file
-	url(r'^test/', views.blank_view, name = 'test_view'),
-	url(r'^define_map/', views.define_map, name = 'define_map'),
+	# TODO: Split URLs into app-specific file?
+	# url(r'^define_map/', views.define_map, name = 'define_map'),
 	url(r'^entities/', views.entity_overview, name = 'entity_overview'),
 	url(r'^add_entity/', views.add_entity, name='add_entity'),
 

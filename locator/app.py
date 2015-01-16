@@ -5,6 +5,7 @@ import models
 class Counter(AppBase):
 
 	def handle (self, msg):
+		# To expose the identity (phone #, email, etc) for the sender, uncomment below
 		# print("Identity:\t" + msg.connections[0].identity)
 		if msg.text == 'doctor' or msg.text == 'doctors':
 			count = models.Entity.objects.filter(type = 'doctor').count()
