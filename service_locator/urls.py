@@ -3,7 +3,7 @@ from django.conf.urls import patterns, include, url
 from django.conf.urls.static import static
 from django.contrib import admin
 # from django.contrib.gis import admin
-from locator import views
+from locator import views as locator_views
 
 
 admin.autodiscover()
@@ -23,8 +23,9 @@ urlpatterns = patterns('',
 	# Custom URLs
 	# TODO: Split URLs into app-specific file?
 	# url(r'^define_map/', views.define_map, name = 'define_map'),
-	url(r'^entities/', views.entity_overview, name = 'entity_overview'),
-	url(r'^add_entity/', views.add_entity, name='add_entity'),
+	url(r'^entities/', locator_views.entity_overview, name = 'entity_overview'),
+	url(r'^add_entity/', locator_views.add_entity, name='add_entity'),
+	url(r'^entity/(?P<entity_id>\d+)/$', locator_views.graph_entity, name='graph_entity'),
 
     # Third party URLs
     (r'^selectable/', include('selectable.urls')),

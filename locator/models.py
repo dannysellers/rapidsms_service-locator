@@ -22,10 +22,19 @@ class Point(models.Model):
 	def __repr__ (self):
 		return '<{0}: {1}>'.format(type(self).__name__, self)
 
+	@property
+	def coords (self):
+		"""
+		Dict for use with AJAX responses
+		"""
+		# TODO: JSON response requires these be floats. Any reason to leave them as Decimal?
+		return dict(longitude = float(self.longitude), latitude = float(self.latitude))
+
 
 class LocationType(models.Model):
 	""" Lifted from rapidsms.contrib.locations.models.
 	To be replaced with GeoDjango """
+
 	class Meta:
 		verbose_name = __("Location Type")
 		verbose_name_plural = __("Location Types")
@@ -35,6 +44,13 @@ class LocationType(models.Model):
 
 	def __unicode__ (self):
 		return _(u"{}".format(self.name))
+
+	@property
+	def label (self):
+		"""
+		Return the caption for this LocationType, to be embedded in the map.
+		"""
+		return unicode(self)
 
 
 class MapAreaManager(models.Manager):
@@ -59,7 +75,7 @@ class MapArea(models.Model):
 
 	def __unicode__ (self):
 		return _(u"Map: ({0}, {1})--{2} x {3}".format(self.location.longitude, self.location.latitude,
-													self.width, self.height))
+													  self.width, self.height))
 
 
 class EntityManager(models.Manager):
@@ -79,6 +95,7 @@ class EntityManager(models.Manager):
 class Entity(models.Model):
 	""" This class (eventually a base class) is the prototype for all
 	entities (i.e. market, doctor) tracked by the system. """
+
 	class Meta:
 		verbose_name = __("Entity")
 		verbose_name_plural = __("Entities")
@@ -98,6 +115,7 @@ class Entity(models.Model):
 	def uid (self):
 		return "{}:{}".format(self.type, self.pk)
 
+	@property
 	def as_html (self):
 		"""
 		Return HTML fragment for embedding in a map.
@@ -109,4 +127,23 @@ class Entity(models.Model):
 		"""
 		Return the caption for this Entity, to be embedded in the map.
 		"""
-		return unicode(self)
+		return unicode(self.name)
+
+	@property
+	def coords (self):
+		# return [coord for coord in self.location.coords.values()]
+		return self.location.coords
+
+	@property
+	def geojson(self):
+		"""
+		Processes Entity attributes, returns (minimal) GeoJSON obj
+		:return: GeoJSON Obj
+		:rtype: application/json
+		"""
+		_type = "Point"
+		_coords = [coord for coord in self.location.coords.values()]
+
+		geodict = dict(type = _type, coordinates = _coords)
+
+		return geodict

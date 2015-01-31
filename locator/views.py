@@ -1,26 +1,46 @@
+import json
+
 from django.http import HttpResponse, HttpResponseRedirect
-# from django.template import RequestContext
-from django.shortcuts import render_to_response, render
-from django_tables2 import RequestConfig
+from django.template import RequestContext
+from django.shortcuts import render_to_response
 from django.contrib import messages
 from django.core.context_processors import csrf
-# from django.views.decorators.cache import cache_control
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.cache import cache_control
 
 from service_locator.keys import MAPBOX_API_KEY, TEST_MAP_KEY
-from tables import EntityTable
 from forms import AddEntityForm
 from models import LocationType, Entity
 
 
 # Disable caching by browser
-# @cache_control(no_cache = True)
+@cache_control(no_cache = True)
 def entity_overview (request):
+	context = RequestContext(request)
 	queryset = Entity.objects.all()
-	table = EntityTable(queryset)
-	RequestConfig(request).configure(table)
-	return render(request, "locator/entities.html", {'table': table})
+
+	context_dict = dict(entity_list = list(queryset),
+						headers = ['Name', 'Type', 'Location'],
+						api_key = MAPBOX_API_KEY,
+						map_key = TEST_MAP_KEY)
+	return render_to_response('locator/entities.html', context_dict, context)
 
 
+@csrf_exempt
+def graph_entity (request, entity_id):
+	"""
+	Handles AJAX request for individual entity coordinates
+	"""
+	if request.method == 'GET':
+		requested_entity = Entity.objects.get(location_id = entity_id)
+	else:
+		# Otherwise return some kind of home base?
+		requested_entity = ''
+
+	return HttpResponse(json.dumps(requested_entity.geojson), content_type = 'application/json')
+
+
+@cache_control(no_cache = True)
 def add_entity (request):
 	context_dict = dict(api_key = MAPBOX_API_KEY,
 						map_key = TEST_MAP_KEY,

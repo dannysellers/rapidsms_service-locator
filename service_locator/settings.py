@@ -35,7 +35,7 @@ DATABASES = {
 # DATABASES = {
 # 	'default': {
 # 		'ENGINE': 'django.db.backends.postgresql_psycopg2',
-# 		'NAME': 'service_locator_pgsql.db',
+# 		'NAME': 'service_locator',
 # 		'USER': '',
 # 		'PASSWORD': '',
 # 		'HOST': '',
@@ -216,6 +216,8 @@ INSTALLED_APPS = (
     "rapidsms.contrib.registration",
     # "rapidsms.contrib.echo",
     "rapidsms.contrib.handlers",
+	'leaflet',
+	"djgeojson",
 	"locator",
     "rapidsms.contrib.default",  # Must be last
 )
