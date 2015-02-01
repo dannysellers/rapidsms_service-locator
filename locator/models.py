@@ -7,7 +7,10 @@ from django.utils.translation import ugettext as _, ugettext_lazy as __
 
 class Point(models.Model):
 	""" Lifted from rapidsms.contrib.locations.models.
-	To be replaced with GeoDjango """
+	To be replaced with GeoDjango.
+
+	This model represents an anonymous point on the globe.
+	"""
 
 	class Meta:
 		verbose_name = __("Point")
@@ -24,16 +27,20 @@ class Point(models.Model):
 
 	@property
 	def coords (self):
-		"""
-		Dict for use with AJAX responses
-		"""
+		""" Dict for use with AJAX responses """
 		# TODO: JSON response requires these be floats. Any reason to leave them as Decimal?
 		return dict(longitude = float(self.longitude), latitude = float(self.latitude))
 
 
 class LocationType(models.Model):
 	""" Lifted from rapidsms.contrib.locations.models.
-	To be replaced with GeoDjango """
+	To be replaced with GeoDjango.
+
+	This model represents the 'type' of Location, as an option for a
+	simpler way of having a location hierarchy without having different
+	classes for each location type (as is supported by the generic
+	relation to parent).
+	"""
 
 	class Meta:
 		verbose_name = __("Location Type")
@@ -47,9 +54,6 @@ class LocationType(models.Model):
 
 	@property
 	def label (self):
-		"""
-		Return the caption for this LocationType, to be embedded in the map.
-		"""
 		return unicode(self)
 
 
@@ -94,14 +98,21 @@ class EntityManager(models.Manager):
 
 class Entity(models.Model):
 	""" This class (eventually a base class) is the prototype for all
-	entities (i.e. market, doctor) tracked by the system. """
+	entities (i.e. market, doctor) tracked by the system.
+
+	Directions may be calculated from any point to any point.
+
+	Rather than try and create a short-code system for identifying beacons (i.e. 'AXX101L'),
+	a semantic identifier, such as local flora/fauna or national landmarks, might be more
+	useful and memorable. """
+
+	# TODO: Any reason to impose directions being calculated only from Entities with type Beacon?
 
 	class Meta:
 		verbose_name = __("Entity")
 		verbose_name_plural = __("Entities")
 
 	location = models.ForeignKey(Point)
-	# location = models.PointField(srid=4326)  # geodjango
 	name = models.CharField(max_length = 100)
 	slug = models.SlugField(primary_key = True, unique = True)
 	type = models.ForeignKey(LocationType, related_name = "locations")
@@ -109,7 +120,9 @@ class Entity(models.Model):
 	objects = EntityManager()
 
 	def __unicode__ (self):
-		return _(u"{0}: {1}, {2}".format(self.name, self.location.latitude, self.location.longitude))
+		return getattr(self, "name", "#{}".format(self.pk))
+
+	# return _(u"{0}: {1}, {2}".format(self.name, self.location.latitude, self.location.longitude))
 
 	@property
 	def uid (self):
@@ -135,11 +148,11 @@ class Entity(models.Model):
 		return self.location.coords
 
 	@property
-	def geojson(self):
+	def geojson (self):
 		"""
 		Processes Entity attributes, returns (minimal) GeoJSON obj
 		:return: GeoJSON Obj
-		:rtype: application/json
+		:rtype: GeoJSON
 		"""
 		_type = "Point"
 		_coords = [coord for coord in self.location.coords.values()]

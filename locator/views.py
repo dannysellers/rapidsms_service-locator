@@ -20,7 +20,7 @@ def entity_overview (request):
 	queryset = Entity.objects.all()
 
 	context_dict = dict(entity_list = list(queryset),
-						headers = ['Name', 'Type', 'Location'],
+						headers = ['Name', 'Type', 'Location (Lat, Long)'],
 						api_key = MAPBOX_API_KEY,
 						map_key = TEST_MAP_KEY)
 	return render_to_response('locator/entities.html', context_dict, context)

@@ -231,8 +231,9 @@ INSTALLED_BACKENDS = {
 LOGIN_REDIRECT_URL = '/'
 
 RAPIDSMS_HANDLERS = (
-	'locator.handlers.handlers.QueryHandler',
 	'locator.handlers.handlers.HelpHandler',
+	'locator.handlers.handlers.AtHandler',
+	'locator.handlers.handlers.QueryHandler',
     # 'rapidsms.contrib.echo.handlers.echo.EchoHandler',
     # 'rapidsms.contrib.echo.handlers.ping.PingHandler',
 )
