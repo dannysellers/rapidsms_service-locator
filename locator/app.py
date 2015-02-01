@@ -1,5 +1,6 @@
 from rapidsms.apps.base import AppBase
-import models
+
+from models import *
 
 
 class Counter(AppBase):
@@ -8,11 +9,11 @@ class Counter(AppBase):
 		# To expose the identity (phone #, email, etc) for the sender, uncomment below
 		# print("Identity:\t" + msg.connections[0].identity)
 		if msg.text == 'doctor' or msg.text == 'doctors':
-			count = models.Entity.objects.filter(type = 'doctor').count()
+			count = Entity.objects.filter(type = 'doctor').count()
 			msg.respond("Doctors: {}".format(count))
 			return True
 		elif msg.text == 'market' or msg.text == 'markets':
-			count = models.Entity.objects.filter(type = 'food-distro').count()
+			count = Entity.objects.filter(type = 'food-distro').count()
 			msg.respond("Markets: {}".format(count))
 			return True
 		return False

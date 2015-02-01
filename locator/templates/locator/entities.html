@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
 {% load leaflet_tags %}
-{#{% load render_table from django_tables2 %}#}
 
 {% block title %}
     Defined entities
@@ -16,109 +15,133 @@
 {% endblock extra_javascript %}
 
 {% block content %}
-    <div class="row">
-        <div class="col-md-6">
-            <div id="all_entities_map" class="leaflet-container-default"></div>
-            <script type="text/javascript">
-                (function () {
+    <div class="span6">
+        <div id="all_entities_map" class="leaflet-container-default"></div>
+        <script type="text/javascript">
+            (function () {
 
-                    function loadmap() {
-                        var djoptions = {
-                                    "layers": [["OSM", "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", "\u00a9 <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"]],
-                                    "minimap": false,
-                                    "scale": "metric",
-                                    "center": null,
-                                    "attributionprefix": null,
-                                    "zoom": null,
-                                    "tilesextent": [],
-                                    "extent": [[-90, -180], [90, 180]],
-                                    "resetview": true,
-                                    "srid": null,
-                                    "overlays": [],
-                                    "fitextent": true
-                                },
-                                options = {
-                                    djoptions: djoptions, initfunc: loadmap,
-                                    globals: false, callback: null
-                                };
-                        map = L.Map.djangoMap('all_entities_map', options);
-                    }
+                function loadmap() {
+                    var djoptions = {
+                                "layers": [["OSM", "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", "\u00a9 <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"]],
+                                "minimap": false,
+                                "scale": "metric",
+                                "center": null,
+                                "attributionprefix": null,
+                                "zoom": null,
+                                "tilesextent": [],
+                                "extent": [[-90, -180], [90, 180]],
+                                "resetview": true,
+                                "srid": null,
+                                "overlays": [],
+                                "fitextent": true
+                            },
+                            options = {
+                                djoptions: djoptions, initfunc: loadmap,
+                                globals: false, callback: null
+                            };
+                    map = L.Map.djangoMap('all_entities_map', options);
+                }
 
-                    var loadevents = ["load"];
-                    if (loadevents.length === 0) loadmap();
-                    else if (window.addEventListener) for (var i = 0; i < loadevents.length; i++) window.addEventListener(loadevents[i], loadmap, false);
-                    else if (window.jQuery) jQuery(window).on(loadevents.join(' '), loadmap);
+                var loadevents = ["load"];
+                if (loadevents.length === 0) loadmap();
+                else if (window.addEventListener) for (var i = 0; i < loadevents.length; i++) window.addEventListener(loadevents[i], loadmap, false);
+                else if (window.jQuery) jQuery(window).on(loadevents.join(' '), loadmap);
 
-                })();
-            </script>
+            })();
+        </script>
 
-        </div>
     </div>
 
-    <div class="col-md-6">
-        <div id="json-response">
-        </div>
-    </div>
-    <div class="col-md-6">
-        <table class="table table-striped table-bordered table-hover">
-            <thead>
-            <tr>
-                <th><input type="checkbox" class="checkbox" id="checkAll"></th>
-                {% for item in headers %}
-                    <th>{{ item }}</th>
-                {% endfor %}
-            </tr>
-            </thead>
-            <tbody>
-            {% for entity in entity_list %}
+    <div class="span6">
+        <form>
+            <table class="table table-striped table-bordered table-hover">
+                <thead>
                 <tr>
-                    <td><input type="checkbox" class="checkbox"></td>
-                    <td><a href="#" id="{{ entity.location_id }}" class="entity_link">{{ entity.name }}</a></td>
-                    <td>{{ entity.type }}</td>
-                    <td>{{ entity.location }}</td>
-                </tr>{% endfor %}
-            </tbody>
-        </table>
-    </div>
+                    <th><input type="checkbox" class="checkbox" id="checkAll"></th>
+                    {% for item in headers %}
+                        <th>{{ item }}</th>
+                    {% endfor %}
+                </tr>
+                </thead>
+                <tbody>
+                {% for entity in entity_list %}
+                    <tr>
+                        <td><input type="checkbox" class="checkbox" id="{{ entity.location_id }}"></td>
+                        <td><a href="#" id="{{ entity.location_id }}" class="entity_link">{{ entity.name }}</a></td>
+                        <td>{{ entity.type }}</td>
+                        <td>{{ entity.location }}</td>
+                    </tr>{% endfor %}
+                </tbody>
+            </table>
+            <button type="button" id="entities_button" onclick="getChecked()">Map Points</button>
+        </form>
     </div>
 
-    <script src="{% static "js/search.js" %}"></script>
     <script>
-
-        // AJAX methods
         $(".entity_link").click(function () {
-
-            // TODO: Start with a clean slate
-            // map.clearLayers();
-
             $.ajax({
-
                 url: "/entity/" + this.id + "/",
                 dataType: "text",
                 type: "GET",
-                // data: {species: $(this).val()},
                 error: function (err) {
-
                     alert("Error: " + err.responseText.toString())
-
                 },
                 success: function (data) {
 
-                    $("#json-response").html(data);
-                    //geojson.clearLayers();
-
-                    L.geoJson((JSON.parse(data)), {
-                        //style: choroStyle,
-                        //onEachFeature: onEachFeature
-                    }).addTo(map);
+                    // Every time a new marker is added, check to see if there's
+                    // already an older one there. If so, remove it
+                    data = JSON.parse(data);
+                    if (typeof marker != 'undefined') {
+                        map.removeLayer(marker);
+                        marker = L.geoJson(data).addTo(map);
+                    } else {
+                        marker = L.geoJson(data).addTo(map);
+                    }
+                    // Move map to the point (really, to the center of the
+                    // bounding box of the array that only consists of one point)
+                    group = new L.featureGroup([marker]);
+                    map.setView(group.getBounds().getCenter(), 5, {animation: true})
                 }
             });
         });
 
+        function getChecked() {
+            var checkedList = '';
+            var table = document.getElementsByClassName('table')[0];
+            for (var i = 0; i < table.rows.length; i++) {
+                var checkbox = table.rows[i].cells[0].children[0];
+                if (checkbox.checked) {
+                    checkedList += checkbox.id + "&";
+                }
+            }
+            ajaxEntities(checkedList);
+        }
+
+        function ajaxEntities(list) {
+            $.ajax({
+                url: "/ajax_entities?" + list,
+                dataType: "text",
+                type: "GET",
+                error: function (err) {
+                    alert("Error: " + err.responseText.toString())
+                },
+                success: function (data) {
+                    data = JSON.parse(data);
+                    //if (typeof marker != 'undefined') {
+                        //map.removeLayer(marker);
+                    //}
+                    for (var i = 0; i < data['features'].length; i++) {
+                        L.geoJson(data['features'][i]).addTo(map);
+                    }
+                }
+            })
+        }
+
+        $("input[type='checkbox']").on("click", getChecked);
 
         $("#checkAll").click(function () {
-            $('.checkbox').prop('checked',
-                    $(this).prop('checked'));
+            $('.checkbox').prop('checked', $(this).prop('checked'));
+            getChecked();
         });
     </script>
 

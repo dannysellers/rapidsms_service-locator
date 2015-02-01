@@ -26,6 +26,7 @@ urlpatterns = patterns('',
 	url(r'^entities/', locator_views.entity_overview, name = 'entity_overview'),
 	url(r'^add_entity/', locator_views.add_entity, name='add_entity'),
 	url(r'^entity/(?P<entity_id>\d+)/$', locator_views.graph_entity, name='graph_entity'),
+	url(r'^ajax_entities', locator_views.graph_entities, name='graph_multiple_entities'),
 
     # Third party URLs
     (r'^selectable/', include('selectable.urls')),

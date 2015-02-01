@@ -34,10 +34,32 @@ def graph_entity (request, entity_id):
 	if request.method == 'GET':
 		requested_entity = Entity.objects.get(location_id = entity_id)
 	else:
-		# Otherwise return some kind of home base?
+		# TODO: Otherwise return some kind of home base?
 		requested_entity = ''
 
 	return HttpResponse(json.dumps(requested_entity.geojson), content_type = 'application/json')
+
+
+@csrf_exempt
+def graph_entities (request):
+	entity_list = []
+	if request.method == 'GET':
+		for key in request.GET.keys():
+			if key != 'checkAll':
+				entity_list.append(Entity.objects.get(location_id = key))
+
+		# print(json_data)
+		# json_data = [entity.geojson for entity in entity_list]
+
+		json_data = dict(type = 'FeatureCollection', features = [])
+		for e in entity_list:
+			json_data['features'].append(e.geojson)
+
+		# print(json_data)
+	else:
+		json_data = ''
+
+	return HttpResponse(json.dumps(json_data), content_type = 'application/json')
 
 
 @cache_control(no_cache = True)
@@ -61,9 +83,8 @@ def add_entity (request):
 			messages.add_message(request, messages.SUCCESS, "Entity added successfully.")
 			return HttpResponseRedirect('/entities')
 		else:
+			# TODO: Make this less ugly
 			messages.add_message(request, messages.ERROR, form.errors)
-			# TODO: These messages aren't appearing until the user goes to /entities?
-			return HttpResponseRedirect('/add_entity/')
 	else:
 		form = AddEntityForm()
 
