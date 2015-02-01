@@ -27,35 +27,23 @@ def entity_overview (request):
 
 
 @csrf_exempt
-def graph_entity (request, entity_id):
-	"""
-	Handles AJAX request for individual entity coordinates
-	"""
-	if request.method == 'GET':
-		requested_entity = Entity.objects.get(location_id = entity_id)
-	else:
-		# TODO: Otherwise return some kind of home base?
-		requested_entity = ''
-
-	return HttpResponse(json.dumps(requested_entity.geojson), content_type = 'application/json')
-
-
-@csrf_exempt
 def graph_entities (request):
+	"""
+	Handles AJAX requests for graphing Entity points
+	:param request: GET request
+	:return: GeoJSON-compliant list of data points
+	:rtype: str
+	"""
 	entity_list = []
 	if request.method == 'GET':
 		for key in request.GET.keys():
 			if key != 'checkAll':
 				entity_list.append(Entity.objects.get(location_id = key))
 
-		# print(json_data)
-		# json_data = [entity.geojson for entity in entity_list]
-
 		json_data = dict(type = 'FeatureCollection', features = [])
 		for e in entity_list:
 			json_data['features'].append(e.geojson)
 
-		# print(json_data)
 	else:
 		json_data = ''
 

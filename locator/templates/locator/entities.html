@@ -49,7 +49,8 @@
 
             })();
         </script>
-
+        <br/>
+        <button type="button" onclick="zoomMap()">Fit Map to Selected Points</button>
     </div>
 
     <div class="span6">
@@ -73,39 +74,44 @@
                     </tr>{% endfor %}
                 </tbody>
             </table>
-            <button type="button" id="entities_button" onclick="getChecked()">Map Points</button>
         </form>
     </div>
 
     <script>
-        $(".entity_link").click(function () {
+        function ajaxEntities(list) {
             $.ajax({
-                url: "/entity/" + this.id + "/",
+                url: "/map_entities?" + list,
                 dataType: "text",
                 type: "GET",
                 error: function (err) {
                     alert("Error: " + err.responseText.toString())
                 },
                 success: function (data) {
-
-                    // Every time a new marker is added, check to see if there's
-                    // already an older one there. If so, remove it
                     data = JSON.parse(data);
                     if (typeof marker != 'undefined') {
+                        // If there're already points on the map, remove and redraw
                         map.removeLayer(marker);
-                        marker = L.geoJson(data).addTo(map);
-                    } else {
-                        marker = L.geoJson(data).addTo(map);
                     }
-                    // Move map to the point (really, to the center of the
-                    // bounding box of the array that only consists of one point)
-                    group = new L.featureGroup([marker]);
-                    map.setView(group.getBounds().getCenter(), 5, {animation: true})
+                    marker = new L.layerGroup();
+                    markerList = [];
+                    for (var i = 0; i < data['features'].length; i++) {
+                        point = L.geoJson(data['features'][i]);
+                        markerList.push(point);
+                        marker.addLayer(point);
+                        // TODO: Bind popups to points
+                        // marker.bindPopup(data['features'][i].properties.name);
+                    }
+                    marker.addTo(map);
                 }
-            });
+            })
+        }
+
+        $(".entity_link").click(function () {
+            ajaxEntities([this.id])
         });
 
         function getChecked() {
+            // Get all the currently checked items and pass to ajaxEntities()
             var checkedList = '';
             var table = document.getElementsByClassName('table')[0];
             for (var i = 0; i < table.rows.length; i++) {
@@ -117,32 +123,26 @@
             ajaxEntities(checkedList);
         }
 
-        function ajaxEntities(list) {
-            $.ajax({
-                url: "/ajax_entities?" + list,
-                dataType: "text",
-                type: "GET",
-                error: function (err) {
-                    alert("Error: " + err.responseText.toString())
-                },
-                success: function (data) {
-                    data = JSON.parse(data);
-                    //if (typeof marker != 'undefined') {
-                        //map.removeLayer(marker);
-                    //}
-                    for (var i = 0; i < data['features'].length; i++) {
-                        L.geoJson(data['features'][i]).addTo(map);
-                    }
-                }
-            })
-        }
-
-        $("input[type='checkbox']").on("click", getChecked);
+        $("input[type='checkbox']").not("#checkAll").on("click", getChecked);
 
         $("#checkAll").click(function () {
             $('.checkbox').prop('checked', $(this).prop('checked'));
             getChecked();
         });
+
+        function zoomMap() {
+            // Zooms the map to fit all currently displayed points
+            // TODO: Add some padding
+            if (markerList.length > 1) {
+                group = new L.featureGroup(markerList);
+                map.fitBounds(group.getBounds(), {animation: true})
+            } else if (markerList.length == 1) {
+                // TODO: getBounds of a single point
+                map.fitWorld();
+            } else {
+                map.fitWorld();
+            }
+        }
     </script>
 
 {% endblock content %}
