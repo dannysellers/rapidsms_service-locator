@@ -126,6 +126,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+	'audit_log.middleware.UserLoggingMiddleware',
 )
 
 ROOT_URLCONF = 'service_locator.urls'

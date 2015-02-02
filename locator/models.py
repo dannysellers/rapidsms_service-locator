@@ -3,9 +3,11 @@ from django.db import models
 from django.utils.html import escape
 from django.utils.text import slugify
 from django.utils.translation import ugettext as _, ugettext_lazy as __
+from audit_log.models import AuthStampedModel
+from audit_log.models.managers import AuditLog
 
 
-class Point(models.Model):
+class Point(AuthStampedModel):
 	""" Lifted from rapidsms.contrib.locations.models.
 	To be replaced with GeoDjango.
 
@@ -18,6 +20,8 @@ class Point(models.Model):
 
 	latitude = models.DecimalField(max_digits = 13, decimal_places = 10)
 	longitude = models.DecimalField(max_digits = 13, decimal_places = 10)
+
+	audit_log = AuditLog()
 
 	def __unicode__ (self):
 		return _(u"{0}, {1}".format(self.latitude, self.longitude))
@@ -32,7 +36,7 @@ class Point(models.Model):
 		return dict(longitude = float(self.longitude), latitude = float(self.latitude))
 
 
-class LocationType(models.Model):
+class LocationType(AuthStampedModel):
 	""" Lifted from rapidsms.contrib.locations.models.
 	To be replaced with GeoDjango.
 
@@ -48,6 +52,8 @@ class LocationType(models.Model):
 
 	name = models.CharField(max_length = 100)
 	slug = models.SlugField(unique = True, primary_key = True)
+
+	audit_log = AuditLog()
 
 	def __unicode__ (self):
 		return _(u"{}".format(self.name))
@@ -65,7 +71,7 @@ class MapAreaManager(models.Manager):
 					height = height, width = width)
 
 
-class MapArea(models.Model):
+class MapArea(AuthStampedModel):
 	""" This class defines the map area for generating relative coordinates (i.e.
 	the map box within which all beacons / points must be located) """
 	name = models.CharField(max_length = 100)
@@ -76,6 +82,7 @@ class MapArea(models.Model):
 	width = models.DecimalField(max_digits = 13, decimal_places = 10)
 
 	objects = MapAreaManager()
+	audit_log = AuditLog()
 
 	def __unicode__ (self):
 		return _(u"Map: ({0}, {1})--{2} x {3}".format(self.location.longitude, self.location.latitude,
@@ -96,7 +103,7 @@ class EntityManager(models.Manager):
 					slug = _slug, type = _type)
 
 
-class Entity(models.Model):
+class Entity(AuthStampedModel):
 	""" This class (eventually a base class) is the prototype for all
 	entities (i.e. market, doctor) tracked by the system.
 
@@ -118,6 +125,7 @@ class Entity(models.Model):
 	type = models.ForeignKey(LocationType, related_name = "locations")
 
 	objects = EntityManager()
+	audit_log = AuditLog()
 
 	def __unicode__ (self):
 		return getattr(self, "name", "#{}".format(self.pk))
