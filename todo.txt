@@ -19,3 +19,6 @@ GeoDjango
 
 should MapArea be divided up into a grid?
 do relative coordinates make sense? relative distance wouldn't rely on it
+
+Register people, including people as doctors etc and admins
+Aggregating data: report surges in queries based on location and subject

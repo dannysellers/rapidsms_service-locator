@@ -20,7 +20,10 @@ del [Service ID] -- remove existing entity?
 
 
 class HelpHandler(KeywordHandler):
-	keyword = "help_test"
+	"""
+	Handler to process requests for help.
+	"""
+	keyword = "help"
 	# TODO: Add internationalization support
 
 	def help (self):
@@ -38,6 +41,13 @@ class HelpHandler(KeywordHandler):
 
 
 class AtHandler(PatternHandler):
+	"""
+	Handler to process queries for [ENTITY] at or near any other [ENTITY].
+
+	Returns the distance, relative angle, and cardinal direction from the
+	first point to the second.
+	"""
+	# TODO: Track queries for aggregation
 	pattern = r"^(.+)\s+(?:near|at)\s+(.+?)$"
 
 	def handle (self, *args):
@@ -58,6 +68,9 @@ class AtHandler(PatternHandler):
 
 
 class QueryHandler(PatternHandler):
+	"""
+	Default handler to catch messages not processed by other handlers in this file.
+	"""
 	pattern = r'^$'
 	""" All non-matching messages are silently ignored, to allow
 	other apps or handlers to catch them. """

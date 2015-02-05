@@ -130,8 +130,6 @@ class Entity(AuthStampedModel):
 	def __unicode__ (self):
 		return getattr(self, "name", "#{}".format(self.pk))
 
-	# return _(u"{0}: {1}, {2}".format(self.name, self.location.latitude, self.location.longitude))
-
 	@property
 	def uid (self):
 		return "{}:{}".format(self.type, self.pk)
