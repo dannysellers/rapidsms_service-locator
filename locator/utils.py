@@ -56,7 +56,7 @@ def get_distance (from_entity, to_entity, trim_length):
 	x = to_entity.location.longitude - from_entity.location.longitude
 	y = to_entity.location.latitude - from_entity.location.latitude
 	hypotenuse = hypot(x, y)
-	# TODO: Confirm conversion of coordinates to km/m
+	# TODO: Settle the issue of units
 	# divide hypotenuse by 1000 for km, and again by 1.6093 for miles?
 
 	if hypotenuse <= 1:
