@@ -1,9 +1,10 @@
-import json
+# import json
 
 from rapidsms.contrib.messagelog.models import Message
 from django.http import HttpResponse
 from django.template import RequestContext
 from django.shortcuts import render_to_response
+# from datetime import date
 
 # from models import LocationType, Entity
 
@@ -13,12 +14,12 @@ def query_count (request):
 	Tallies queries, returns volume per day of week ( datetime.datetime.isoweekday() )
 	:param request:
 	:type request:
-	:return: JSON
+	:return: CSV
 	:rtype: HttpResponse
 	"""
 
 	dict_data = {}
-	data = "day,count\n"
+	data = "day,percent\n"
 
 	if request.method == 'GET':
 		successful_messages = Message.objects.exclude(text = 'Sorry, RapidSMS could not understand your message.')
@@ -26,14 +27,17 @@ def query_count (request):
 		# TODO: Track 'successful' vs 'unsuccessul' queries
 
 		for message in successful_messages:
-			_date = message.date.isoweekday()
+			# isoweekday: 1 = Monday, 7 = Sunday
+			# _date = date.strftime(message.date, '%A')
+			_date = message.date.weekday()
 			if _date not in dict_data:
 				dict_data[_date] = 1
 			else:
 				dict_data[_date] += 1
 
 		for key, value in dict_data.iteritems():
-			data += "{},{}\n".format(key, value)
+			value /= float(len(successful_messages))
+			data += "{},{}\n".format(key, (value * 100))
 
 	return HttpResponse(data, content_type = 'application/json')
 

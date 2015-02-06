@@ -234,9 +234,9 @@ LOGIN_REDIRECT_URL = '/'
 RAPIDSMS_HANDLERS = (
 	'rapidsms.contrib.registration.handlers.language.LanguageHandler',
 	'rapidsms.contrib.registration.handlers.register.RegisterHandler',
+    'rapidsms.contrib.echo.handlers.echo.EchoHandler',
+    'rapidsms.contrib.echo.handlers.ping.PingHandler',
 	'locator.handlers.handlers.HelpHandler',
 	'locator.handlers.handlers.AtHandler',
 	'locator.handlers.handlers.QueryHandler',
-    'rapidsms.contrib.echo.handlers.echo.EchoHandler',
-    'rapidsms.contrib.echo.handlers.ping.PingHandler',
 )

@@ -1,7 +1,7 @@
 from rapidsms.contrib.handlers import KeywordHandler, PatternHandler
 # from django.utils.translation import ugettext as _  #, ugettext_lazy as __
 from locator.models import Entity
-from locator.utils import get_distance
+from locator import utils
 
 """
 ADD NEW HANDLERS TO RAPIDSMS_HANDLERS IN SETTINGS.PY
@@ -13,7 +13,6 @@ ADD NEW HANDLERS TO RAPIDSMS_HANDLERS IN SETTINGS.PY
 [Service] near [other entity]
 
 Flows:
-reg -- register phone / create a contact (used for permissions, etc)
 new [Service] -- create new entity
 del [Service ID] -- remove existing entity?
 """
@@ -38,11 +37,12 @@ class HelpHandler(KeywordHandler):
         """
 		text = text.strip().lower()
 		self.respond("You asked for help with: {}".format(text))
+		return True
 
 
 class AtHandler(PatternHandler):
 	"""
-	Handler to process queries for [ENTITY] at or near any other [ENTITY].
+	Handler to process queries for Entity of specified type at or near any other Entity.
 
 	Returns the distance, relative angle, and cardinal direction from the
 	first point to the second.
@@ -52,19 +52,24 @@ class AtHandler(PatternHandler):
 
 	def handle (self, *args):
 		try:
-			from_pt = Entity.objects.get(slug__iexact = args[1])
+			from_type_list = Entity.objects.filter(type = args[0])
 		except Entity.DoesNotExist:
-			return self.respond_error("Sorry, no point called '{}' could be found.".format(args[1]))
+			return self.respond_error("Sorry, no points of type '{}' could be found.".format(args[1]))
 
 		try:
-			to_pt = Entity.objects.get(slug__iexact = args[0])
+			to_pt = Entity.objects.get(slug__iexact = args[1])
 		except Entity.DoesNotExist:
 			return self.respond_error("Sorry, no point called '{}' could be found.".format(args[0]))
 
-		distance, direction, card_direction = get_distance(from_pt, to_pt, 3)
+		from_pt = utils.get_closest(from_type_list, 1, to_pt)
 
-		self.respond("A {4} called {0} can be found {1} km {2} degrees {5} from {3}.".format(
+		distance = utils.get_distance(from_pt, to_pt, 2)
+		direction = utils.get_angle(from_pt, to_pt)
+		card_direction = utils.get_cardinal(direction)
+
+		self.respond("A {4} called {0} can be found {1} {2} degrees {5} from {3}.".format(
 			to_pt, distance, direction, from_pt, to_pt.type.label, card_direction))
+		return True
 
 
 class QueryHandler(PatternHandler):
@@ -82,3 +87,4 @@ class QueryHandler(PatternHandler):
         :param args: The matching groups from the regular expression.
         """
 		self.respond("Try searching for [TERM] at [LOCATION], or send [LOCATION_TYPE] to get a count.")
+		return True
