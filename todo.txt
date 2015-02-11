@@ -22,3 +22,16 @@ do relative coordinates make sense? relative distance wouldn't rely on it
 
 Register people, including people as doctors etc and admins
 Aggregating data: report surges in queries based on location and subject
+
+Alerts:
+Scheduled or realtime
+django-cron for schedule. Run 4 times per day--check whether any listed alert has
+exceeded the trigger threshold, take action if so. For realtime models, hook into the
+save() method of supported model classes, or into post_save signal.
+
+Actions can include sending email, texting registered contact (of Admin/Admin-type class),
+or other? (Other could be tricky and is vague).
+
+Alert 'center':
+Display alert notification in navbar if any triggered alerts since the last time the
+user logged in (should be tracked already). User has the option to mark all as read.
