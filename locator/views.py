@@ -2,7 +2,7 @@ import json
 
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, render
 from django.contrib import messages
 from django.core.context_processors import csrf
 from django.views.decorators.csrf import csrf_exempt
@@ -45,7 +45,8 @@ def graph_entities (request):
 			json_data['features'].append(e.geojson)
 
 	else:
-		json_data = ''
+		messages.add_message(request, messages.ERROR, "This URL doesn't accept POSTs.")
+		return HttpResponseRedirect('/entities')
 
 	return HttpResponse(json.dumps(json_data), content_type = 'application/json')
 
