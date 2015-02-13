@@ -5,6 +5,7 @@ from django.contrib import admin
 # from django.contrib.gis import admin
 from locator import views as locator_views
 from locator import monitor_views
+from locator import alert_views
 
 
 admin.autodiscover()
@@ -29,6 +30,7 @@ urlpatterns = patterns('',
 	url(r'^map_entities', locator_views.graph_entities, name='map_entities'),
 	url(r'^reports/$', monitor_views.report_page, name='report_page'),
 	url(r'^monitor', monitor_views.query_count, name='query_count'),
+	url(r'^alerts/', alert_views.alert_overview, name='alert_overview'),
 
     # Third party URLs
     (r'^selectable/', include('selectable.urls')),

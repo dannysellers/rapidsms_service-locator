@@ -17,14 +17,6 @@
 
 {% block content %}
 
-    {% if messages %}
-        <ul class="message">
-            {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message|safe }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-
     {{ form.errors }}
     <form action="/add_entity/" method="post">{% csrf_token %}
         <div class="fieldWrapper">
@@ -45,7 +37,7 @@
             </select>
         </div>
         <br>
-        <input type="submit" name="submit" class="btn" value="Add entity">
+        <input type="submit" name="submit" class="btn btn-primary" value="Add entity">
     </form>
 
     <script>
