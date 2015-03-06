@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load url from future %}
+
+{% block title %}Service Locator{% endblock %}
+
+{% block content %}
+    <div class="page-header">
+        <h1>Service Locator</h1>
+    </div>
+
+    <p>Generally, this tool is intended to allow users to locate services and resources near them, and provides general
+        directions between two points.</p>
+
+    <p>A list of tracked entities can be found by going to the <a href="/entities/">Entities</a> page.</p>
+
+    <p>Supported queries include:</p>
+    <ul>
+        <li>"help"</li>
+        <li>[POINT] at / near [POINT]</li>
+    </ul>
+{% endblock %}

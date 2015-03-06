@@ -25,7 +25,7 @@ def query_count (request):
 
 	if request.method == 'GET':
 		successful_messages = Message.objects.exclude(text = 'Sorry, RapidSMS could not understand your message.')
-		# rudimentary filtering. if Message.objects[i].text = ^^, Message.objects.[i - 1] is unsuccessful
+		# rudimentary filtering. if Message.objects[i].text = ^^, Message.objects[i - 1] is unsuccessful
 		# TODO: Track 'successful' vs 'unsuccessul' queries
 
 		# Data keys for Chartjs, per data-set

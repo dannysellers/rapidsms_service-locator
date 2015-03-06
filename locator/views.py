@@ -2,19 +2,27 @@ import json
 
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
-from django.shortcuts import render_to_response, render
+from django.shortcuts import render_to_response
 from django.contrib import messages
 from django.core.context_processors import csrf
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import cache_control
+from django.views.decorators.http import require_GET
 
 from service_locator.keys import MAPBOX_API_KEY, TEST_MAP_KEY
 from forms import AddEntityForm
 from models import LocationType, Entity
 
 
+@require_GET
+def dashboard (request):
+	context = RequestContext(request)
+	return render_to_response('locator/dashboard.html', context)
+
+
 # Disable caching by browser
 @cache_control(no_cache = True)
+@require_GET
 def entity_overview (request):
 	context = RequestContext(request)
 	queryset = Entity.objects.all()
@@ -26,6 +34,7 @@ def entity_overview (request):
 	return render_to_response('locator/entities.html', context_dict, context)
 
 
+@require_GET
 @csrf_exempt
 def graph_entities (request):
 	"""
@@ -35,18 +44,13 @@ def graph_entities (request):
 	:rtype: str
 	"""
 	entity_list = []
-	if request.method == 'GET':
-		for key in request.GET.keys():
-			if key != 'checkAll':
-				entity_list.append(Entity.objects.get(location_id = key))
+	for key in request.GET.keys():
+		if key != 'checkAll':
+			entity_list.append(Entity.objects.get(location_id = key))
 
-		json_data = dict(type = 'FeatureCollection', features = [])
-		for e in entity_list:
-			json_data['features'].append(e.geojson)
-
-	else:
-		messages.add_message(request, messages.ERROR, "This URL doesn't accept POSTs.")
-		return HttpResponseRedirect('/entities')
+	json_data = dict(type = 'FeatureCollection', features = [])
+	for e in entity_list:
+		json_data['features'].append(e.geojson)
 
 	return HttpResponse(json.dumps(json_data), content_type = 'application/json')
 

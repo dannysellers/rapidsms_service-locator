@@ -86,5 +86,5 @@ class QueryHandler(PatternHandler):
 
         :param args: The matching groups from the regular expression.
         """
-		self.respond("Try searching for [TERM] at [LOCATION], or send [LOCATION_TYPE] to get a count.")
+		self.respond("Try searching for [TERM] at/near [LOCATION], or send [LOCATION_TYPE] to get a count.")
 		return True
