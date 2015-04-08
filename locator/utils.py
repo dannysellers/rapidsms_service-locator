@@ -1,13 +1,13 @@
-from math import hypot, atan, degrees
+import math
 
 from models import Entity
 
 
-def trim_num (value, val_length=2):
+def trim_num (value, val_length = 2):
 	"""
 	Receives `value`, truncates to length (used primarily for distances / angles)
 	:param value: Value to truncate
-	:type value: float
+	:type value: Decimal
 	:param val_length: Length to truncate after the decimal
 	:type val_length: int
 	:return: Trimmed number
@@ -42,7 +42,7 @@ def get_cardinal (angle):
 	return cardinals[sector]
 
 
-def get_distance (from_entity, to_entity, trim_length):
+def get_distance (from_entity, to_entity, trim_length = 2):
 	"""
 	Calculates hypotenuse and angle of direction from point 'base'
 	 to point 'entity'.
@@ -55,7 +55,7 @@ def get_distance (from_entity, to_entity, trim_length):
 	"""
 	x = to_entity.location.longitude - from_entity.location.longitude
 	y = to_entity.location.latitude - from_entity.location.latitude
-	hypotenuse = hypot(x, y)
+	hypotenuse = math.hypot(x, y)
 	# TODO: Settle the issue of units
 	# divide hypotenuse by 1000 for km, and again by 1.6093 for miles?
 
@@ -69,23 +69,37 @@ def get_distance (from_entity, to_entity, trim_length):
 	return hypotenuse
 
 
-def get_angle (from_entity, to_entity):
+def get_angle (from_entity, to_entity, trim_length = 2):
 	"""
-	Calculates angle of direction from 'from_entity' to 'to_entity'
+	Calculates component lengths and angle of direction from 'from_entity' to 'to_entity'
 	:type from_entity: Entity
 	:type to_entity: Entity
-	:return: angle
-	:rtype: float
+	:return: x-difference, y-difference, angle
+	:rtype: tuple
 	"""
 	x = to_entity.location.longitude - from_entity.location.longitude
 	y = to_entity.location.latitude - from_entity.location.latitude
 
-	angle = trim_num(degrees(atan(x / y)))
+	angle = trim_num(math.degrees(math.atan(x / y)))
 
-	return angle
+	x = trim_num(x, trim_length)
+	y = trim_num(y, trim_length)
+
+	# Add cardinal direction
+	if x < 0:
+		x += "km E"
+	else:
+		x += "km W"
+
+	if y < 0:
+		y += "km S"
+	else:
+		y += "km N"
+
+	return x, y, angle
 
 
-def get_closest (entity_list, n, loc):
+def get_closest (entity_list, origin_pt, n = 1):
 	"""
 	Get the 'n' items of 'entity_list' that are closest to 'loc'
 	:param entity_list: List of Entities to consider
@@ -98,7 +112,7 @@ def get_closest (entity_list, n, loc):
 	"""
 	_list = []
 	for entity in entity_list:
-		dist = get_distance(entity, loc, 4)
+		dist = get_distance(entity, origin_pt, 4)
 		_list.append({'entity': entity, 'dist': dist})
 	sorted_list = sorted(_list, key = lambda i: i['dist'])
 	if n == 1:

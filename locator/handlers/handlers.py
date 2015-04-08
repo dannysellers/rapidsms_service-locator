@@ -52,23 +52,26 @@ class AtHandler(PatternHandler):
 
 	def handle (self, *args):
 		try:
-			from_type_list = Entity.objects.filter(type = args[0])
+			# Retrieve all points of type args[0]
+			to_type_list = Entity.objects.filter(type = args[0])
 		except Entity.DoesNotExist:
 			return self.respond_error("Sorry, no points of type '{}' could be found.".format(args[1]))
 
 		try:
-			to_pt = Entity.objects.get(slug__iexact = args[1])
+			from_pt = Entity.objects.get(slug__iexact = args[1])
 		except Entity.DoesNotExist:
 			return self.respond_error("Sorry, no point called '{}' could be found.".format(args[0]))
 
-		from_pt = utils.get_closest(from_type_list, 1, to_pt)
+		# Get the point closest to args[1]
+		to_pt = utils.get_closest(to_type_list, from_pt)
 
-		distance = utils.get_distance(from_pt, to_pt, 2)
-		direction = utils.get_angle(from_pt, to_pt)
-		card_direction = utils.get_cardinal(direction)
+		distance = utils.get_distance(from_pt, to_pt)
+		diff_x, diff_y, angle = utils.get_angle(from_pt, to_pt)
 
-		self.respond("A {4} called {0} can be found {1} {2} degrees {5} from {3}.".format(
-			to_pt, distance, direction, from_pt, to_pt.type.label, card_direction))
+		card_direction = utils.get_cardinal(angle)
+
+		self.respond("A {0} called {1} can be found {2}, {3} ({4} at {5}) from {6}.".format(
+			to_pt, to_pt.type.label, diff_x, diff_y, distance, card_direction, from_pt))
 		return True
 
 
